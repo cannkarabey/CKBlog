@@ -1,0 +1,4 @@
+{
+  "nav": { "blog": "Blog", "projects": "Projeler", "about": "Hakkımda" },
+  "home": { "hello": "Merhaba, CKBlog!" }
+}
