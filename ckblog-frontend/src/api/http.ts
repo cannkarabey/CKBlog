@@ -1,20 +1,11 @@
-import axios from 'axios'
+import axios from "axios";
 
+const isMock = import.meta.env.VITE_USE_MOCK === "1";
 
-const api = axios.create({
-baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
-withCredentials: true,
-})
+// Mock modda gerçek istek atmayacağız, yine de instance kalsın
+const http = axios.create({
+  baseURL: isMock ? "/api/v1" : (import.meta.env.VITE_API_BASE_URL || "/api/v1"),
+  withCredentials: false, // mock modda kapalı
+});
 
-
-api.interceptors.response.use(
-(r) => r,
-(err) => {
-// Basit hata günlüğü; ileride toast vs bağlanır
-console.error('[API ERROR]', err?.response?.data || err.message)
-return Promise.reject(err)
-}
-)
-
-
-export default api
+export default http;

@@ -1,21 +1,29 @@
 <script setup lang="ts">
+import { useRoute } from "vue-router";
 import LangSwitcher from "./LangSwitcher.vue";
+const route = useRoute();
+const localeParam = (route.params.locale as string) || "tr";
 </script>
 
 <template>
   <header class="site-header">
     <div class="container bar">
-      <RouterLink to="/" style="font-weight:800; letter-spacing:.2px;">CKBlog</RouterLink>
+      <RouterLink :to="{ name: 'home', params: { locale: localeParam } }" class="logo">
+        CKBlog
+      </RouterLink>
 
-      <nav class="nav" aria-label="Main">
-        <RouterLink :to="{ name: 'blog-list' }">Blog</RouterLink>
-        <RouterLink :to="{ name: 'projects' }">Projects</RouterLink>
-        <RouterLink :to="{ name: 'about' }">About</RouterLink>
-      </nav>
+      <div class="right">
+        <nav class="nav" aria-label="Main">
+          <RouterLink :to="{ name: 'blog-list', params: { locale: localeParam } }">Blog</RouterLink>
+          <RouterLink :to="{ name: 'projects',  params: { locale: localeParam } }">Projects</RouterLink>
+          <RouterLink :to="{ name: 'about',     params: { locale: localeParam } }">About</RouterLink>
+        </nav>
 
-      <div style="display:flex; align-items:center; gap:12px;">
         <LangSwitcher />
-        <button class="btn btn-primary">Login</button>
+
+        <RouterLink class="btn btn-primary" :to="{ name: 'login', params: { locale: localeParam } }">
+          Login
+        </RouterLink>
       </div>
     </div>
   </header>

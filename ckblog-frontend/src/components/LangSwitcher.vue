@@ -8,15 +8,14 @@ const router = useRouter();
 
 function setLocale(loc: "tr" | "en") {
   locale.value = loc;
-  const params = { ...route.params, locale: loc === "tr" ? "tr" : "en" };
-  router.push({ name: route.name as string, params, query: route.query });
+  const name = (route.name as string) || "home";
+  router.push({ name, params: { ...route.params, locale: loc }, query: route.query });
 }
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <button class="text-sm underline" @click="setLocale('tr')">TR</button>
-    <span>/</span>
-    <button class="text-sm underline" @click="setLocale('en')">EN</button>
+  <div class="segment">
+    <button class="seg-btn" :class="{ 'is-active': locale === 'tr' }" @click="setLocale('tr')">TR</button>
+    <button class="seg-btn" :class="{ 'is-active': locale === 'en' }" @click="setLocale('en')">EN</button>
   </div>
 </template>

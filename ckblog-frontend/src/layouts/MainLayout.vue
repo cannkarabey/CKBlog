@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import AppHeader from "../components/AppHeader.vue";
-import AppFooter from "../components/AppFooter.vue";
+import AppHeader from "@/components/AppHeader.vue";
+import AppFooter from "@/components/AppFooter.vue";
 </script>
 
 <template>
-  <div style="min-height:100%; display:flex; flex-direction:column;">
+  <div class="page">                   <!--  page -->
     <AppHeader />
-    <main class="container main">
+    <main class="container main page-main">
       <RouterView />
     </main>
-    <AppFooter />
+    <AppFooter />                      <!-- footer her sayfada -->
   </div>
 </template>
