@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRoute } from "vue-router";
 import LangSwitcher from "./LangSwitcher.vue";
+import { useAuthStore } from "@/stores/auth";
+
 const route = useRoute();
-const localeParam = (route.params.locale as string) || "tr";
+const localeParam = computed(() => (route.params.locale as string) || "tr"); // reaktif
+const auth = useAuthStore();
 </script>
 
 <template>
@@ -21,9 +25,34 @@ const localeParam = (route.params.locale as string) || "tr";
 
         <LangSwitcher />
 
-        <RouterLink class="btn btn-primary" :to="{ name: 'login', params: { locale: localeParam } }">
-          Login
-        </RouterLink>
+        <!-- KULLANICI OTURUM DURUMU -->
+        <template v-if="auth.isAuthed">
+          <div class="account">
+            <button class="avatar-btn" title="Hesabım">
+              <img class="avatar" src="https://i.pravatar.cc/100?img=15" alt="Hesap" />
+            </button>
+            <div class="menu">
+              <div class="menu-head">{{ auth.user?.name || "Hesabım" }}</div>
+              <!-- ileride profil sayfası eklenecekse:
+              <RouterLink class="menu-item" :to="{ name:'user-profile', params:{ locale: localeParam } }">Profil</RouterLink>
+              -->
+              <button class="menu-item" @click="auth.logout()">Çıkış</button>
+              <!-- Admin girişi küçük link olarak kalsın -->
+              <RouterLink class="menu-item subtle" :to="{ name: 'login', params: { locale: localeParam } }">
+                Admin
+              </RouterLink>
+            </div>
+          </div>
+        </template>
+        <template v-else>
+          <!-- Ziyaretçi: Kullanıcı giriş/üye ol -->
+          <RouterLink class="btn" :to="{ name: 'user-login', params: { locale: localeParam } }">
+            Giriş
+          </RouterLink>
+          <RouterLink class="btn btn-primary" :to="{ name: 'user-register', params: { locale: localeParam } }">
+            Kayıt Ol
+          </RouterLink>
+        </template>
       </div>
     </div>
   </header>
