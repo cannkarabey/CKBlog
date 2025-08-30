@@ -34,10 +34,7 @@ const props = defineProps<{
         :to="{ name: 'blog-detail', params: { slug: p.slug } }"
       >
         <img :src="p.image" :alt="p.title" loading="lazy" />
-        <div class="recent-overlay">
-          <div class="recent-tags" v-if="p.tags?.length">
-            <span v-for="t in p.tags.slice(0,3)" :key="t" class="tag">{{ t }}</span>
-          </div>
+        <div class="recent-overlay">          
           <h3 class="recent-card-title">{{ p.title }}</h3>
           <p v-if="p.excerpt" class="recent-excerpt">{{ p.excerpt }}</p>
           <span class="recent-meta" v-if="p.publishedAt">

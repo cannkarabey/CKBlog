@@ -554,3 +554,69 @@ html, body, #app { height: 100%; }
 }
 .menu-item:hover { background:#f1f5f9; }
 .menu-item.subtle { color: var(--muted); }
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* === Detail (Blog & Project) === */
+
+.detail { margin-top: 16px; display: grid; gap: 16px; }
+
+/* başlık + meta */
+.detail-head { display: grid; gap: 6px; }
+.post-title { margin: 0; }
+.post-meta { display:flex; align-items:center; gap: 8px; color: var(--muted); font-weight: 600; }
+.post-meta .tags { display:flex; gap: 6px; flex-wrap: wrap; }
+.post-meta .tag {
+  padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 12px;
+  background: #f1f5f9; color: #0f172a; border: 1px solid var(--border);
+}
+.dot { opacity: .6; }
+
+/* kapak görseli */
+.detail-cover { margin: 4px 0; }
+.detail-cover img {
+  width: 100%; height: auto; display: block; border-radius: 18px;
+  border: 1px solid var(--border);
+}
+
+/* aksiyon çubuğu */
+.detail-actions {
+  display:flex; align-items:center; justify-content:space-between; gap: 10px;
+  padding: 12px 14px; border-radius: 16px;
+}
+.detail-actions .share { display:flex; gap: 10px; flex-wrap: wrap; }
+
+/* içerik */
+.detail-body { padding: 18px; border-radius: 18px; }
+.detail-body .prose pre { background: #0b1020; color: #e5e7eb; padding: 14px; border-radius: 12px; overflow:auto; }
+.detail-body .prose code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.detail-body .prose blockquote { border-left: 4px solid color-mix(in oklab, var(--primary) 60%, #ffffff); padding: 8px 12px; background: #f8fafc; border-radius: 8px; }
+
+/* yorum alanı */
+.detail-comments { }
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* === Project özel === */
+
+.project-links { display:flex; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border-radius: 16px; }
+.project-meta { padding: 14px; border-radius: 16px; }
+
+.meta-grid {
+  display:grid; gap: 16px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px){
+  .meta-grid { grid-template-columns: 1fr 1fr; }
+}
+.meta-box { border: 1px solid var(--border); border-radius: 14px; padding: 12px; background: #fff; }
+.meta-title { font-weight: 800; margin: 0 0 6px; }
+.meta-text { margin: 0; }
+
+/* yeniden kullanılan chip */
+.chips { display:flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 7px 12px; border-radius: 999px;
+  border: 1px solid var(--border); background: #fff;
+  font-weight: 700; font-size: 13px;
+}
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
