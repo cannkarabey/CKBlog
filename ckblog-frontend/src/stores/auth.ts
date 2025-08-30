@@ -1,7 +1,12 @@
 import { defineStore } from "pinia";
 import { login as apiLogin, me as apiMe, logout as apiLogout } from "@/api/auth";
 
-interface User { id: string; name: string; email: string; role: "ADMIN" | "AUTHOR"; }
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "ADMIN" | "AUTHOR";   // ileride USER vs. eklenebilir
+}
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -9,8 +14,14 @@ export const useAuthStore = defineStore("auth", {
     loading: false,
   }),
   getters: {
+    /** kullanıcı login mi */
     isAuthed: (s) => !!s.user,
+
+    /** admin mi */
     isAdmin: (s) => s.user?.role === "ADMIN",
+
+    /** yazar mı */
+    isAuthor: (s) => s.user?.role === "AUTHOR",
   },
   actions: {
     async fetchMe() {
@@ -30,7 +41,6 @@ export const useAuthStore = defineStore("auth", {
       await apiLogout();
       localStorage.removeItem("ckblog:accessToken");
       this.user = null;
-    }
-  }
+    },
+  },
 });
-

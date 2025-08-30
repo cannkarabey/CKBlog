@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed } from "vue";            /* <-- EKLE */
+import { computed } from "vue";
 import { useRoute } from "vue-router";
 import AppHeader from "@/components/AppHeader.vue";
 import AppFooter from "@/components/AppFooter.vue";
+import AdminSidebar from "@/components/admin/AdminSidebar.vue";
 
 const route = useRoute();
-const isLogin = computed(() => route.name === "login");   /* <-- GÜNCELLE */
+const isLogin = computed(() => route.name === "login");
 </script>
-
 
 <template>
   <!-- LOGIN sayfası: header + sade içerik + footer -->
@@ -20,10 +20,18 @@ const isLogin = computed(() => route.name === "login");   /* <-- GÜNCELLE */
   </div>
 
   <!-- Yönetim ekranları: sol sidebar + içerik -->
-  <div v-else style="min-height:100%; display:grid; grid-template-columns: 240px 1fr;">
-    <aside style="border-right:1px solid var(--border); padding:16px;">Admin Sidebar</aside>
+  <div v-else class="admin-grid">
+    <AdminSidebar />
     <main class="container main">
       <RouterView />
     </main>
   </div>
 </template>
+
+<style scoped>
+.admin-grid {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+</style>
