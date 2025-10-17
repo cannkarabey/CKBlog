@@ -1,116 +1,146 @@
-CKBlog 
-Projenin Amacı
-CKBlog, Vue 3 ve Composition API kullanılarak geliştirilmiş modern bir kişisel blog ve portföy sitesidir. Proje; blog yazılarını, tamamlanan projeleri ve geliştirici hakkındaki bilgileri sunmayı amaçlar. Ayrıca, tüm içeriğin kolayca yönetilebilmesi için kapsamlı bir admin paneli içerir.
+# 🌐 CKBlog — Modern Vue 3 Personal Blog & Admin Panel
 
-Frontend geliştirme sürecini hızlandırmak ve backend'den bağımsız çalışabilmek için esnek bir mock API sistemi ile donatılmıştır.
+> **Entire structure and frontend updated October 2025**
 
-Kullanılan Teknolojiler
-Frontend: Vue 3 (Composition API), Vite, TypeScript
+Learn frontend architecture, modular Vue 3 development, and build a scalable personal blog system powered by mock API & admin dashboard.
 
-Routing: Vue Router
+---
 
-State Management: Pinia
+## 🧱 Project Overview
 
-HTTP Client: Axios
+**CKBlog** is a **modern personal blog and portfolio website** built with **Vue 3 + Composition API**.  
+It allows users to publish blog posts, display projects, and manage content through a comprehensive **Admin Panel**.  
+Frontend development is fully decoupled from backend using a **Mock API system**, enabling independent development and testing.
 
-Uluslararasılaştırma (i18n): vue-i18n
+---
 
-SEO & Meta Yönetimi: @vueuse/head
+## 🛠️ Tech Stack
 
-Styling: CSS (Global Değişkenler ile)
+| Layer | Technology |
+|:------|:------------|
+| **Frontend** | Vue 3 (Composition API), TypeScript, Vite |
+| **Routing** | Vue Router |
+| **State Management** | Pinia |
+| **HTTP Client** | Axios |
+| **i18n** | vue-i18n |
+| **SEO & Meta** | @vueuse/head |
+| **Styling** | CSS (Global Variables) |
 
-Kurulum
-Projeyi klonlayın:
+---
 
-Bash
+## 🧩 Features at a Glance
 
+### 🎨 Frontend & UI
+- **Multi-language Support (TR/EN)** using `vue-i18n`  
+- **Dynamic SEO & Open Graph tags** via `useSeo` composable  
+- **Dark Mode** with global theme state  
+- **Responsive Design** using CSS variables  
+- **Modern Layouts:** `MainLayout` and `AdminLayout`
+
+### ⚙️ State & Logic
+- `authStore`: manages user session, login tokens  
+- `uiStore`: controls theme, UI states  
+- Centralized `axios` instance with interceptors for authorization
+
+### 🧰 Admin Panel
+- Route guards (`requiresAdmin`) for authorization  
+- CRUD screens for posts, projects, and media  
+- Modular sidebar + admin layout  
+- Generic table (`AdminTable.vue`) and media picker (`MediaPicker.vue`)
+
+---
+
+## 🧠 Mock API System
+
+> Develop and test without a backend!
+
+| Config | Description |
+|:--------|:-------------|
+| `.env.local` | Set environment variables |
+| `VITE_USE_MOCK=1` | Enables mock mode |
+| `/src/mocks/` | Contains static data for posts and projects |
+
+All API calls go through `/src/adapters/http.ts`, which defines a centralized Axios instance.  
+Interceptors automatically handle **Authorization headers** and error responses.
+
+---
+
+## 📂 Project Structure
+
+```plaintext
+src/
+ ├─ adapters/      # Axios instance & interceptors
+ ├─ api/           # API modules (auth, posts, projects)
+ ├─ assets/        # Static assets (images, fonts)
+ ├─ components/    # Reusable UI components
+ ├─ composables/   # Vue 3 reusable logic (useSeo, useAuth, etc.)
+ ├─ i18n/          # Language files (tr.json, en.json)
+ ├─ layouts/       # MainLayout, AdminLayout
+ ├─ mocks/         # Mock API data
+ ├─ pages/         # Route views (Home, Blog, Admin)
+ ├─ router/        # Router setup & guards
+ ├─ stores/        # Pinia store modules
+ └─ styles/        # Global CSS (base.css)
+🚀 Getting Started
+1️⃣ Clone the Repository
+bash
+Copy code
 git clone <repository-url>
 cd ckblog
-Gerekli NPM paketlerini yükleyin:
-
-Bash
-
+2️⃣ Install Dependencies
+bash
+Copy code
 npm install
-.env.local dosyasını oluşturun ve ortam değişkenlerini yapılandırın. Mock API ile çalışmak için aşağıdaki değişkeni ekleyin:
+3️⃣ Setup Environment
+Create .env.local file:
 
-Kod snippet'i
-
+bash
+Copy code
 VITE_USE_MOCK=1
-Çalıştırma
-Geliştirme sunucusunu başlatın:
-
-Bash
-
+4️⃣ Run Development Server
+bash
+Copy code
 npm run dev
-Uygulamayı tarayıcıda açın: http://localhost:5173
+Open http://localhost:5173
 
-Proje Yapısı
-src/
- ├─ adapters/      # Axios instance ve interceptor'lar (http.ts)
- ├─ api/           # Alan bazlı API servisleri (auth, posts, projects)
- ├─ assets/        # Statik varlıklar (resimler, fontlar)
- ├─ components/    # Paylaşılan ve genel Vue bileşenleri (Header, Footer, vb.)
- ├─ composables/   # Tekrar kullanılabilir Composition API fonksiyonları (useSeo)
- ├─ i18n/          # Dil dosyaları (tr.json, en.json)
- ├─ layouts/       # Sayfa düzenleri (MainLayout, AdminLayout)
- ├─ mocks/         # Backend mock verileri ve servisleri (posts, projects)
- ├─ pages/         # Rotalara karşılık gelen sayfalar (Home, Blog, Admin)
- ├─ router/        # Vue Router yapılandırması ve guard'lar
- ├─ stores/        # Pinia store modülleri (auth, ui)
- └─ styles/        # Global CSS stilleri (base.css)
-Öne Çıkan Özellikler
---- Frontend & UI Özellikleri ---
-Çok Dilli Destek: vue-i18n ile /tr ve /en gibi locale tabanlı URL yapısı. Dil geçişleri LangSwitcher bileşeni ile yönetilir.
+🧭 Table of Contents
+Project Overview
 
-State Management: Pinia ile merkezi state yönetimi. authStore kullanıcı oturum bilgilerini, uiStore ise tema (dark mode) gibi arayüz durumlarını tutar.
+Tech Stack
 
-Dinamik SEO: @vueuse/head ve useSeo composable'ı sayesinde her sayfa için dinamik olarak <title> ve meta (OG) etiketleri oluşturulur.
+Features at a Glance
 
-Modern UI: Global CSS değişkenleri (base.css) ile yönetilen tutarlı bir tasarım dili. Responsive (mobil uyumlu) yapı.
+Mock API System
 
-Sayfa Yapıları:
+Project Structure
 
-Anasayfa: Hero Slider, son yazılar ve öne çıkan projeler bölümleri.
+Getting Started
 
-Blog & Projeler: Arama, filtreleme ve grid tabanlı listeleme.
+Current Progress
 
---- Admin Panel ---
-Yetkilendirme: Rota tabanlı koruma (requiresAdmin guard) ve authStore üzerinden token yönetimi.
+Developer Notes
 
-Layout: AdminLayout ve AdminSidebar ile yönetilen, modüler ve kullanışlı bir arayüz.
+📈 Current Progress
+Status	Description
+✅	Base Vue 3 structure completed
+✅	Home, Blog, Projects, About pages implemented
+✅	TR/EN i18n system functional
+✅	Dynamic SEO titles & OG meta tags
+✅	Fully working Admin Panel (mock mode)
+✅	Dark Mode added
+⚙️	Blog filtering & pagination (in progress)
+⚙️	Project detail page redesign (planned)
+⚙️	Markdown editor integration (planned)
+⚙️	Real API connection + sitemap.xml (pending backend)
 
-CRUD İşlemleri: Yazılar, projeler, medya ve yorumlar için tam kapsamlı oluşturma, okuma, güncelleme ve silme (CRUD) arayüzleri.
+🔧 Recommended Setup
+Tool	Purpose
+VS Code + Volar	Vue 3 language support
+Node.js 18+	Recommended runtime
+Git + GitHub	Version control & CI/CD
+Mock API Mode	For isolated frontend testing
 
-Genel Bileşenler:
-
-AdminTable.vue: Farklı veri türlerini listeleyebilen, slot tabanlı jenerik tablo bileşeni.
-
-MediaPicker.vue: Yazı ve projelere kapak görseli eklemek için kullanılan modal tabanlı medya seçici.
-
---- API & Mock Sistemi ---
-Merkezi HTTP Yönetimi: adapters/http.ts içinde tanımlanan axios instance'ı, tüm API isteklerini yönetir. Interceptor'lar ile otomatik olarak Authorization başlığı eklenir ve hata durumları yönetilir.
-
-Değiştirilebilir Backend: .env dosyasındaki VITE_USE_MOCK değişkeni 1 yapıldığında, uygulama gerçek bir backend yerine mocks/ klasöründeki statik verilerle çalışır. Bu, frontend geliştirmesini backend'den bağımsız hale getirir.
-
-Mevcut Durum
---- Tamamlananlar ---
-Vue 3 projesinin temel iskeleti ve modern proje yapısı.
-
-Ana kullanıcı arayüzü sayfaları (Anasayfa, Blog, Projeler, Hakkında).
-
-Uluslararasılaştırma (TR/EN) altyapısı ve dil geçişleri.
-
-Dinamik SEO meta etiket sistemi.
-
-Mock API verileriyle çalışan tam fonksiyonel Admin Paneli (Giriş, CRUD ekranları).
-
-Dark mode desteği.
-
---- Geliştirilecekler / Eksikler ---
-Blog sayfası için etiket/kategori bazlı filtreleme ve sayfalama (pagination).
-
-Proje detay sayfasının tasarımı ve içeriğinin zenginleştirilmesi.
-
-Admin panelindeki yazı düzenleyiciye bir Markdown editörü entegrasyonu.
-
-Backend tamamlandığında gerçek API servis bağlantıları ve sitemap.xml oluşturma.
+👨‍💻 Developer Notes
+CKBlog was designed as a scalable and educational frontend architecture for Vue developers.
+Its modular structure, i18n integration, and admin dashboard make it ideal for personal websites and blog-based portfolios.
+The use of mock APIs allows complete frontend independence during development.
