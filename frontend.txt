@@ -1,0 +1,480 @@
+# CKBlog Frontend — Spec v2 (Full Refactor)
+
+> Güncelleme: Mart 2026 — Tamamen yeni UI/UX, yeni tasarım sistemi, deploy-ready yapı
+
+---
+
+# 1) Hedefler (MVP → Deploy)
+
+- Blog yazıları: liste, detay, etiket/kategori filtre, sayfalama
+- Projeler: kart listesi + detay sayfası
+- Hakkımda sayfası (profesyonel timeline, yetenekler)
+- Arama (başlık + kısa özet, debounce 300ms)
+- Tek admin girişiyle yazı oluştur/düzenle (Markdown editör)
+- Çok dillilik (TR/EN) — URL ile senkron (`/:locale/...`)
+- Temel SEO (meta, og tags, sitemap API'den)
+- Dark Mode (tek tema — deep navy)
+- Tamamen responsive (mobile-first yaklaşım)
+- Deploy-ready production build (Vercel / VPS)
+
+---
+
+# 2) Tasarım Sistemi (Design System)
+
+## 2.1 Tema: "Midnight Dev"
+
+> İlham: Deep navy arka plan, soft cyan/mavi vurgular, kart tabanlı modüler layout.
+> Hedef: Profesyonel, teknoloji odaklı, modern bir geliştirici blogu hissi.
+
+## 2.2 Renk Paleti
+
+| Rol             | Token Adı          | Hex       | Kullanım                        |
+|-----------------|--------------------|-----------|---------------------------------|
+| Background      | `--bg-primary`     | `#0a0e1a` | Sayfa arka planı               |
+| Surface         | `--bg-surface`     | `#111827` | Kart ve bileşen yüzeyleri      |
+| Surface Alt     | `--bg-surface-alt` | `#1a2332` | Hover/aktif kart varyasyonu    |
+| Border          | `--border-default` | `#1e293b` | Kart ve bölüm sınırları        |
+| Border Active   | `--border-active`  | `#334155` | Hover/focus sınırları          |
+| Text Primary    | `--text-primary`   | `#f1f5f9` | Ana metin (başlıklar)         |
+| Text Secondary  | `--text-secondary` | `#94a3b8` | Açıklama ve alt metinler      |
+| Text Muted      | `--text-muted`     | `#64748b` | Placeholder, tarih gibi        |
+| Accent Primary  | `--accent-primary` | `#38bdf8` | CTA butonlar, linkler          |
+| Accent Glow     | `--accent-glow`    | `#0ea5e9` | Hover glow efektleri           |
+| Accent Badge    | `--accent-badge`   | `#1e3a5f` | Badge/etiket arka planları     |
+| Success         | `--color-success`  | `#10b981` | Başarı durumları               |
+| Error           | `--color-error`    | `#ef4444` | Hata durumları                 |
+| Warning         | `--color-warning`  | `#f59e0b` | Uyarı durumları                |
+
+## 2.3 Tipografi
+
+| Rol          | Font           | Ağırlıklar    | Kullanım                |
+|--------------|----------------|---------------|-------------------------|
+| **Heading**  | Space Grotesk  | 500, 600, 700 | Başlıklar, hero text    |
+| **Body**     | DM Sans        | 400, 500, 700 | Gövde metin, açıklamalar|
+| **Code**     | JetBrains Mono | 400, 500      | Kod blokları, monospace |
+
+```css
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+```
+
+### Tip Ölçeği (1.25 Ratio — General Web)
+
+| Element    | Size    | Weight | Line Height |
+|------------|---------|--------|-------------|
+| H1         | 2.5rem  | 700    | 1.2         |
+| H2         | 2rem    | 600    | 1.3         |
+| H3         | 1.5rem  | 600    | 1.35        |
+| Body       | 1rem    | 400    | 1.6         |
+| Small      | 0.875rem| 400    | 1.5         |
+| Caption    | 0.75rem | 500    | 1.4         |
+
+## 2.4 Spacing (8px Grid)
+
+```
+4px  — Mikro (ikon-metin arası)
+8px  — xs
+16px — sm
+24px — md
+32px — lg
+48px — xl
+64px — 2xl
+80px — 3xl (section padding)
+```
+
+## 2.5 Efektler
+
+### Kart Stili
+```css
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--border-active);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.05);
+}
+```
+
+### Glow Accent (badge, buton hover)
+```css
+.glow-accent {
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.15);
+}
+```
+
+### Geçiş Animasyonları
+```
+- Hover: 200ms ease-out
+- Modal/overlay: 300ms ease-in-out
+- Sayfa geçişi: 250ms fade
+- prefers-reduced-motion: tüm animasyonları devre dışı bırak
+```
+
+## 2.6 Breakpoints (Mobile-First)
+
+| Breakpoint | Min Width | Açıklama         |
+|------------|-----------|-------------------|
+| Mobile     | 0         | Varsayılan (base) |
+| Tablet     | 768px     | `md:`             |
+| Desktop    | 1024px    | `lg:`             |
+| Wide       | 1440px    | `xl:`             |
+
+---
+
+# 3) Teknoloji & Kütüphaneler
+
+| Kategori        | Teknoloji                                          |
+|-----------------|----------------------------------------------------|
+| **Core**        | Vue 3 (Composition API) + TypeScript + Vite        |
+| **Routing**     | Vue Router (locale parametreli)                    |
+| **State**       | Pinia                                              |
+| **Styling**     | Tailwind CSS v4 (dark mode: class strategy)        |
+| **i18n**        | vue-i18n                                           |
+| **SEO/Meta**    | @vueuse/head                                       |
+| **HTTP**        | axios (interceptorlarla)                           |
+| **Formlar**     | vee-validate + zod                                 |
+| **Md Editör**   | TipTap (admin) veya MVP'de SimpleMDE               |
+| **İkonlar**     | Lucide Vue (SVG, emoji değil!)                     |
+| **Test**        | Vitest + Vue Test Utils                            |
+| **Linting**     | ESLint + Prettier                                  |
+
+---
+
+# 4) Klasör Yapısı
+
+```
+ckblog-frontend/
+├─ src/
+│  ├─ api/              # axios instance + endpoint modülleri
+│  │  ├─ http.ts        # baseURL, interceptors (auth, error)
+│  │  ├─ posts.ts       # getPosts, getPostBySlug, createPost, ...
+│  │  ├─ projects.ts    # CRUD
+│  │  ├─ auth.ts        # login, refresh, logout, me
+│  │  ├─ tags.ts        # getTags, createTag, ...
+│  │  ├─ categories.ts  # getCategories, ...
+│  │  └─ media.ts       # upload, delete
+│  │
+│  ├─ components/
+│  │  ├─ ui/            # Genel UI bileşenleri
+│  │  │  ├─ AppHeader.vue       # Floating navbar
+│  │  │  ├─ AppFooter.vue
+│  │  │  ├─ MobileNav.vue       # Hamburger menü (slide-over)
+│  │  │  ├─ ThemeToggle.vue     # Dark mode switch
+│  │  │  ├─ LangSwitcher.vue    # TR/EN toggle
+│  │  │  ├─ SearchInput.vue     # Debounced arama
+│  │  │  ├─ Pagination.vue
+│  │  │  ├─ TagChip.vue         # Etiket badge
+│  │  │  ├─ Toast.vue           # Bildirim sistemi
+│  │  │  ├─ SkeletonLoader.vue  # Loading placeholder
+│  │  │  ├─ EmptyState.vue      # Boş içerik durumu
+│  │  │  └─ ErrorState.vue      # Hata durumu
+│  │  │
+│  │  ├─ blog/          # Blog domain bileşenleri
+│  │  │  ├─ PostCard.vue        # Kart tasarımı
+│  │  │  ├─ PostMeta.vue        # Tarih, okuma süresi
+│  │  │  ├─ PostList.vue        # Grid listeleme
+│  │  │  └─ PostFilters.vue     # Kategori/etiket filtre
+│  │  │
+│  │  ├─ project/       # Proje domain bileşenleri
+│  │  │  ├─ ProjectCard.vue
+│  │  │  └─ TechBadge.vue       # Teknoloji etiketleri
+│  │  │
+│  │  └─ admin/         # Admin panel bileşenleri
+│  │     ├─ EditorToolbar.vue
+│  │     ├─ ImagePicker.vue
+│  │     ├─ FormField.vue
+│  │     ├─ ConfirmDialog.vue
+│  │     ├─ AdminSidebar.vue
+│  │     └─ AdminTable.vue
+│  │
+│  ├─ composables/      # Vue 3 composable'lar
+│  │  ├─ useSeo.ts      # Dinamik meta/og tags
+│  │  ├─ useAuth.ts     # Auth işlemleri
+│  │  ├─ useToast.ts    # Toast bildirimleri
+│  │  ├─ useDebounce.ts # Debounce utility
+│  │  └─ useMediaQuery.ts # Responsive algılama
+│  │
+│  ├─ i18n/
+│  │  ├─ index.ts       # i18n init
+│  │  └─ locales/
+│  │     ├─ tr.json     # Tam Türkçe çeviriler
+│  │     └─ en.json     # Tam İngilizce çeviriler
+│  │
+│  ├─ layouts/
+│  │  ├─ MainLayout.vue  # Public layout (header + footer)
+│  │  └─ AdminLayout.vue # Admin layout (sidebar + header)
+│  │
+│  ├─ pages/
+│  │  ├─ Home.vue
+│  │  ├─ BlogList.vue
+│  │  ├─ BlogDetail.vue
+│  │  ├─ Projects.vue
+│  │  ├─ ProjectDetail.vue
+│  │  ├─ About.vue
+│  │  ├─ NotFound.vue    # 404 sayfası
+│  │  └─ admin/
+│  │     ├─ Login.vue
+│  │     ├─ Dashboard.vue
+│  │     ├─ PostEditor.vue
+│  │     └─ Media.vue
+│  │
+│  ├─ router/
+│  │  └─ index.ts       # Tüm rotalar + guard'lar
+│  │
+│  ├─ stores/
+│  │  ├─ authStore.ts   # JWT, user, isAdmin
+│  │  ├─ postStore.ts   # Liste, detay, filtreler, pagination
+│  │  ├─ projectStore.ts# Liste, detay
+│  │  └─ uiStore.ts     # Theme, toast state, modal
+│  │
+│  ├─ styles/
+│  │  ├─ tailwind.css   # @tailwind directives + custom tokens
+│  │  └─ global.css     # CSS custom properties, font imports
+│  │
+│  ├─ utils/
+│  │  ├─ slugify.ts
+│  │  ├─ dateFormat.ts
+│  │  └─ readingTime.ts
+│  │
+│  ├─ App.vue
+│  └─ main.ts
+│
+├─ public/
+│  ├─ favicon.ico
+│  └─ og-image.png      # Default OG görseli
+│
+├─ tailwind.config.ts   # Tema token'ları burada
+├─ vite.config.ts
+├─ tsconfig.json
+└─ .env.local           # VITE_API_BASE_URL, VITE_DEFAULT_LOCALE
+```
+
+---
+
+# 5) Rotalar (Vue Router)
+
+| Path                              | Sayfa              | Notlar                           |
+|-----------------------------------|--------------------|----------------------------------|
+| `/:locale(tr|en)?/`               | Home               | Hero + son yazılar + projeler    |
+| `/:locale?/blog`                  | BlogList           | query: page, q, tag, cat        |
+| `/:locale?/blog/:slug`            | BlogDetail         | Markdown render + benzer yazılar |
+| `/:locale?/projects`              | Projects           | Grid kartları                   |
+| `/:locale?/projects/:slug`        | ProjectDetail      | Detay + tech stack              |
+| `/:locale?/about`                 | About              | Timeline + yetenekler           |
+| `/:locale?/admin/login`           | Login              | Guard yok                       |
+| `/:locale?/admin`                 | Dashboard          | requiresAdmin guard             |
+| `/:locale?/admin/posts/new`       | PostEditor (yeni)  | requiresAdmin guard             |
+| `/:locale?/admin/posts/:id`       | PostEditor (düzenle)| requiresAdmin guard            |
+| `/:locale?/admin/media`           | Media              | requiresAdmin guard             |
+| `*`                               | NotFound (404)     |                                 |
+
+> Router beforeEach: `html[lang]` set, locale i18n'e senkronla, `/admin/*` guard kontrolü
+
+---
+
+# 6) Pinia Store Yapısı
+
+### authStore
+```
+- state: accessToken, user, isAdmin
+- actions: login(), logout(), refreshToken(), fetchMe()
+- getters: isAuthenticated
+```
+
+### postStore
+```
+- state: posts[], currentPost, filters (tag, cat, q), pagination, loading
+- actions: fetchPosts(), fetchPostBySlug(), createPost(), updatePost(), deletePost()
+- getters: filteredPosts, totalPages
+```
+
+### projectStore
+```
+- state: projects[], currentProject, loading
+- actions: fetchProjects(), fetchProjectBySlug(), createProject(), updateProject()
+```
+
+### uiStore
+```
+- state: theme (dark varsayılan), toasts[], mobileMenuOpen
+- actions: toggleTheme(), showToast(), hideMobileMenu()
+- persist: theme → localStorage
+```
+
+---
+
+# 7) API Katmanı (axios)
+
+### api/http.ts
+- `baseURL`: `import.meta.env.VITE_API_BASE_URL`
+- Request interceptor: `Authorization: Bearer ${accessToken}`
+- Response interceptor: 401 → refresh token dene → başarısızsa logout
+- Tüm hatalar: `{ error: { code, message, details? } }` formatında
+
+### Endpoint Modülleri
+```
+api/posts.ts     → getPosts(params), getPostBySlug(slug), createPost(data), updatePost(id, data), deletePost(id)
+api/projects.ts  → getProjects(), getProjectBySlug(slug), createProject(data), updateProject(id, data), deleteProject(id)
+api/auth.ts      → login(email, pass), refresh(), logout(), getMe()
+api/tags.ts      → getTags(), createTag(name)
+api/categories.ts→ getCategories(), createCategory(name)
+api/media.ts     → uploadMedia(file), deleteMedia(id)
+```
+
+---
+
+# 8) Sayfalar — UI/UX Detay
+
+## Home
+- **Hero Section**: Tam genişlik, Space Grotesk büyük başlık, kısa açıklama. Gradient text veya subtle glow.
+- **Son Blog Yazıları**: 3-kartlık horizontal scroll veya grid. PostCard bileşeni.
+- **Öne Çıkan Projeler**: 2-3 kart, tech badge'ler.
+- **CTA**: Blog'a veya projelere yönlendirme.
+
+## BlogList
+- Üstte: arama + filtre (tag/kategori chip'leri)
+- Kart grid (2 sütun desktop, 1 sütun mobil)
+- Skeleton loader → hata/boş durum
+- Sayfalama (alt kısım)
+- Her kart: kapak görsel, başlık, excerpt, tag chip'leri, tarih + okuma süresi
+
+## BlogDetail
+- Kapak görseli (full-width, rounded)
+- Başlık (Space Grotesk, H1)
+- Meta bilgileri: tarih, okuma süresi, kategori, yazar
+- Markdown render (DOMPurify ile sanitize)
+- Kod bloklarında JetBrains Mono + syntax highlight
+- Alt kısım: benzer yazılar (tag bazlı 3 adet)
+
+## Projects
+- Grid layout (masonry benzeri veya düz grid)
+- Her kart: başlık, özet, tech badge'ler, repo/live URL butonları
+- Client-side filtre (teknolojiye göre)
+
+## About
+- Profesyonel tanıtım section
+- Yetenekler (progress bar veya tag cloud)
+- Zaman çizelgesi (eğitim + kariyer)
+- İletişim bilgileri
+
+## Admin/Login
+- Merkezde card-based login formu
+- Email + şifre
+- Hata feedback'i (form validation)
+
+## Admin/Dashboard
+- Sol sidebar (AdminLayout)
+- Yazı listesi tablosu (AdminTable)
+- Yeni yazı / düzenle butonları
+
+## Admin/PostEditor
+- Başlık input, slug (auto-generate ama düzenlenebilir), excerpt
+- Markdown editör (SimpleMDE veya TipTap)
+- Kapak görseli yükleme (drag & drop → preview)
+- Tag/kategori seçimi
+- Status (draft/published)
+- Kaydet + Yayınla butonları
+
+---
+
+# 9) i18n Yapısı
+
+### Dosya Formatı
+```json
+// tr.json
+{
+  "nav": { "home": "Ana Sayfa", "blog": "Blog", "projects": "Projeler", "about": "Hakkımda" },
+  "blog": { "readMore": "Devamını Oku", "search": "Blog yazılarında ara...", "noResults": "Sonuç bulunamadı" },
+  "auth": { "login": "Giriş Yap", "logout": "Çıkış", "register": "Kayıt Ol" },
+  "common": { "loading": "Yükleniyor...", "error": "Bir hata oluştu" }
+}
+```
+
+- **Kapsam**: Tüm UI metinleri (nav, butonlar, placeholder'lar, boş/hata durumları)
+- **İçerik**: Blog yazıları ve projeler tek dilde (TR). İleride `locale` alanı eklenebilir.
+- **URL Senkron**: `/:locale/...` → `vue-i18n.locale` güncellemesi
+
+---
+
+# 10) Responsive Tasarım Stratejisi
+
+### Mobile (0-767px)
+- Hamburger menü (slide-over panel)
+- Tek sütun kartlar
+- Stack layout (dikey yığın)
+- Touch target: min 44x44px
+- Bottom-fixed CTA buton (gerekirse)
+
+### Tablet (768-1023px)
+- 2 sütun grid
+- Hamburger veya compact nav
+- Sidebar collapse (admin)
+
+### Desktop (1024px+)
+- Tam navigasyon
+- 2-3 sütun grid
+- Admin sidebar açık
+- max-width: 1280px (container)
+
+---
+
+# 11) SEO Stratejisi
+
+- `@vueuse/head` ile her sayfada dinamik `<title>`, `<meta description>`, OG tags
+- Kapak görseli: `og:image` olarak set
+- Canonical URL: her sayfada
+- `html[lang]` attribute — locale'e göre
+- `sitemap.xml` → backend API'den
+- Structured data (JSON-LD): BlogPosting schema
+
+---
+
+# 12) Performans
+
+- Route-level code splitting: `() => import('...')`
+- Görsellerde `loading="lazy"` + width/height attribute
+- Skeleton loader (content shift önleme)
+- Store'da cache: son sorguyu tut, refetch interval
+- Vite build optimization: chunk splitting, tree shaking
+
+---
+
+# 13) Erişilebilirlik (a11y)
+
+- Tüm görsellerde `alt` attribute
+- Tüm form input'larında `<label>`
+- Klavye navigasyonu: focus ring (visible)
+- ARIA landmark'lar: `<nav>`, `<main>`, `<footer>`
+- Color contrast: en az 4.5:1 (WCAG AA)
+- `prefers-reduced-motion` → animasyonları kapat
+
+---
+
+# 14) Test (Minimum)
+
+- **Unit**: PostCard, Pagination, LangSwitcher render testleri (Vitest + Vue Test Utils)
+- **E2E** (opsiyonel): Playwright ile "login → yeni post oluştur → listede gör"
+- **Scripts**: `npm run test`, `npm run test:coverage`
+
+---
+
+# 15) Env & Config
+
+```env
+VITE_API_BASE_URL=https://api.ckblog.com/api/v1
+VITE_DEFAULT_LOCALE=tr
+VITE_SITE_NAME=CKBlog
+VITE_SITE_URL=https://ckblog.com
+```
+
+---
+
+# 16) Deploy Hazırlığı
+
+- Production build: `npm run build` → `dist/`
+- Vercel: `vercel.json` ile SPA fallback
+- Veya VPS: Nginx ile static serving + API reverse proxy
+- `.env.production` ile prod değişkenleri

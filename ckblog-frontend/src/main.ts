@@ -4,7 +4,7 @@ import { createHead } from "@vueuse/head";
 import App from "./App.vue";
 import router from "./router";
 import i18n from "./i18n";
-import "./styles/base.css";
+import "./styles/main.css";
 
 function applyLangDir(locale: string) {
   document.documentElement.lang = locale;

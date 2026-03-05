@@ -1,25 +1,85 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { ExternalLink, Github } from 'lucide-vue-next'
+
 defineProps<{
-  title: string; slug: string; summary?: string; coverImageUrl?: string;
-  techStack?: string[]; repoUrl?: string; liveUrl?: string;
-}>();
+  title: string
+  summary: string
+  slug: string
+  coverImage?: string
+  techStack?: string[]
+  repoUrl?: string
+  liveUrl?: string
+}>()
+
+const { locale } = useI18n()
 </script>
 
 <template>
-  <article class="card" style="display:flex; flex-direction:column; gap:10px;">
-    <div v-if="coverImageUrl" style="height:140px; overflow:hidden; border-radius:12px;">
-      <img :src="coverImageUrl" alt="" style="width:100%; height:100%; object-fit:cover;" />
+  <div class="card-surface card-surface-hover p-0 overflow-hidden group">
+    <!-- Cover Image -->
+    <div class="aspect-video overflow-hidden bg-bg-surface-alt">
+      <img
+        v-if="coverImage"
+        :src="coverImage"
+        :alt="title"
+        loading="lazy"
+        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+      <div v-else class="w-full h-full flex items-center justify-center text-text-muted">
+        <span class="text-3xl">🚀</span>
+      </div>
     </div>
-    <RouterLink :to="{ name: 'project-detail', params: { slug } }">
-      <h3 style="margin:0 0 6px;">{{ title }}</h3>
-    </RouterLink>
-    <p v-if="summary" class="muted" style="margin:0;">{{ summary }}</p>
-    <div v-if="techStack?.length" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-      <span v-for="t in techStack" :key="t" class="muted" style="border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:12px;">{{ t }}</span>
+
+    <!-- Content -->
+    <div class="p-5 flex flex-col gap-3">
+      <!-- Title -->
+      <router-link
+        :to="`/${locale}/projects/${slug}`"
+        class="text-lg font-semibold text-text-primary leading-snug no-underline hover:text-accent transition-colors duration-200"
+      >
+        {{ title }}
+      </router-link>
+
+      <!-- Summary -->
+      <p class="text-sm text-text-secondary line-clamp-2 m-0">
+        {{ summary }}
+      </p>
+
+      <!-- Tech Stack -->
+      <div v-if="techStack?.length" class="flex flex-wrap gap-2">
+        <span
+          v-for="tech in techStack"
+          :key="tech"
+          class="px-2.5 py-1 text-xs font-semibold rounded-full bg-accent-badge text-accent-badge-text"
+        >
+          {{ tech }}
+        </span>
+      </div>
+
+      <!-- Links -->
+      <div class="flex items-center gap-3 pt-2 border-t border-border-default">
+        <a
+          v-if="repoUrl"
+          :href="repoUrl"
+          target="_blank"
+          rel="noopener"
+          class="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-accent transition-colors duration-200 no-underline"
+        >
+          <Github class="w-3.5 h-3.5" />
+          GitHub
+        </a>
+        <a
+          v-if="liveUrl"
+          :href="liveUrl"
+          target="_blank"
+          rel="noopener"
+          class="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-accent transition-colors duration-200 no-underline"
+        >
+          <ExternalLink class="w-3.5 h-3.5" />
+          Live
+        </a>
+      </div>
     </div>
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <a v-if="repoUrl" :href="repoUrl" target="_blank" class="btn" style="border:1px solid var(--border);">Repo</a>
-      <a v-if="liveUrl" :href="liveUrl" target="_blank" class="btn btn-primary">Live</a>
-    </div>
-  </article>
+  </div>
 </template>

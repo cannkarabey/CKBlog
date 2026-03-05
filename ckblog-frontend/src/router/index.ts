@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from "vue-router";
-import type { RouteRecordRaw } from "vue-router"; // ✅ type import
+import { createRouter, createWebHashHistory } from "vue-router";
+import type { RouteRecordRaw } from "vue-router";
 import i18n from "../i18n";
 import { useAuthStore } from "../stores/auth";
 
@@ -25,31 +25,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import("../layouts/AdminLayout.vue"),
     children: [
       { path: "login", name: "login", component: () => import("../pages/admin/Login.vue") },
-
-      // 🔒 Admin alanları
       { path: "", name: "dashboard", component: () => import("../pages/admin/Dashboard.vue"), meta: { requiresAdmin: true } },
-
-      // ➕ Post yönetimi
       { path: "posts", name: "admin-posts", component: () => import("../pages/admin/posts/Index.vue"), meta: { requiresAdmin: true } },
       { path: "posts/new", name: "admin-post-new", component: () => import("../pages/admin/posts/Edit.vue"), meta: { requiresAdmin: true } },
       { path: "posts/:id", name: "admin-post-edit", component: () => import("../pages/admin/posts/Edit.vue"), meta: { requiresAdmin: true } },
-
-      // ➕ Project yönetimi
       { path: "projects", name: "admin-projects", component: () => import("../pages/admin/projects/Index.vue"), meta: { requiresAdmin: true } },
       { path: "projects/new", name: "admin-project-new", component: () => import("../pages/admin/projects/Edit.vue"), meta: { requiresAdmin: true } },
       { path: "projects/:id", name: "admin-project-edit", component: () => import("../pages/admin/projects/Edit.vue"), meta: { requiresAdmin: true } },
     ],
   },
-
-  // locale’siz köke geleni default locale’e gönder
   { path: "/", redirect: "/tr" },
-
-  // fallback
   { path: "/:pathMatch(.*)*", redirect: "/tr" },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior: () => ({ top: 0 }),
 });
@@ -64,7 +54,7 @@ router.beforeEach(async (to) => {
 
   // loginli ama store boş ise me'yi çek
   if (!auth.user && localStorage.getItem("ckblog:accessToken")) {
-    try { await auth.fetchMe(); } catch {}
+    try { await auth.fetchMe(); } catch { }
   }
 
   // sadece admin sayfaları için kontrol

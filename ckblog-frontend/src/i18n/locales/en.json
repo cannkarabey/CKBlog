@@ -1,4 +1,63 @@
 {
-  "nav": { "blog": "Blog", "projects": "Projects", "about": "About" },
-  "home": { "hello": "Hello, CKBlog!" }
+  "nav": {
+    "blog": "Blog",
+    "projects": "Projects",
+    "about": "About"
+  },
+  "home": {
+    "hero": {
+      "greeting": "Hi, I'm",
+      "name": "Cann Karabey",
+      "role": "Full-Stack Developer",
+      "desc": "I build web applications with modern technologies and share what I learn through blog posts."
+    },
+    "recentPosts": "Recent Posts",
+    "recentPostsSub": "Latest published blog posts",
+    "featuredProjects": "Featured Projects",
+    "featuredProjectsSub": "Projects I've been working on",
+    "viewAll": "View All",
+    "readMore": "Read More"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Articles on software, technology and development",
+    "search": "Search posts...",
+    "noResults": "No results found",
+    "readMore": "Read More",
+    "readingTime": "min read",
+    "allCategories": "All"
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Projects I've built and contributed to",
+    "viewRepo": "GitHub",
+    "viewLive": "Live",
+    "techStack": "Technologies"
+  },
+  "about": {
+    "title": "About",
+    "subtitle": "Developer, student and tech enthusiast",
+    "skills": "Skills",
+    "experience": "Experience",
+    "contact": "Contact"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "back": "Back",
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  }
 }

@@ -1,4 +1,63 @@
 {
-  "nav": { "blog": "Blog", "projects": "Projeler", "about": "Hakkımda" },
-  "home": { "hello": "Merhaba, CKBlog!" }
+  "nav": {
+    "blog": "Blog",
+    "projects": "Projeler",
+    "about": "Hakkımda"
+  },
+  "home": {
+    "hero": {
+      "greeting": "Merhaba, ben",
+      "name": "Cann Karabey",
+      "role": "Full-Stack Developer",
+      "desc": "Modern teknolojilerle web uygulamaları geliştiriyor, öğrendiklerimi blog yazılarıyla paylaşıyorum."
+    },
+    "recentPosts": "Son Yazılar",
+    "recentPostsSub": "En son yayınlanan blog yazıları",
+    "featuredProjects": "Öne Çıkan Projeler",
+    "featuredProjectsSub": "Üzerinde çalıştığım projeler",
+    "viewAll": "Tümünü Gör",
+    "readMore": "Devamını Oku"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Yazılım, teknoloji ve geliştirme üzerine yazılar",
+    "search": "Yazılarda ara...",
+    "noResults": "Sonuç bulunamadı",
+    "readMore": "Devamını Oku",
+    "readingTime": "dk okuma",
+    "allCategories": "Tümü"
+  },
+  "projects": {
+    "title": "Projeler",
+    "subtitle": "Üzerinde çalıştığım ve geliştirdiğim projeler",
+    "viewRepo": "GitHub",
+    "viewLive": "Canlı",
+    "techStack": "Teknolojiler"
+  },
+  "about": {
+    "title": "Hakkımda",
+    "subtitle": "Geliştirici, öğrenci ve teknoloji meraklısı",
+    "skills": "Yetenekler",
+    "experience": "Deneyim",
+    "contact": "İletişim"
+  },
+  "auth": {
+    "login": "Giriş Yap",
+    "logout": "Çıkış",
+    "register": "Kayıt Ol",
+    "email": "E-posta",
+    "password": "Şifre"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "back": "Geri",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "confirm": "Onayla"
+  },
+  "footer": {
+    "rights": "Tüm hakları saklıdır."
+  }
 }

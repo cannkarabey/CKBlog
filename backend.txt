@@ -1,0 +1,518 @@
+# CKBlog Backend — Spec v2 (Full Refactor)
+
+> Güncelleme: Mart 2026 — Production-ready API mimarisi, deploy-ready yapı
+
+---
+
+# 1) Hedefler (MVP → Deploy)
+
+- Blog yazısı CRUD (oluştur/düzenle/sil, taslak–yayında durumları)
+- Proje kartları (repo linki, canlı link, teknoloji etiketleri)
+- Etiket & kategori yönetimi
+- Kapak görseli / medya yükleme
+- Tek admin kullanıcı (JWT kimlik doğrulama)
+- Listeleme + sayfalama + arama/filtre
+- SEO: slug, meta, publishedAt, sitemap.xml
+- Health endpoint (uptime monitoring)
+- Deploy: Docker + VPS veya PaaS
+
+---
+
+# 2) Mimari
+
+| Katman           | Teknoloji                                     |
+|------------------|-----------------------------------------------|
+| **Runtime**      | Node.js (LTS 22+)                             |
+| **Framework**    | Express.js                                    |
+| **Dil**          | TypeScript                                    |
+| **ORM**          | Prisma                                        |
+| **Veritabanı**   | PostgreSQL (dev: Docker, prod: managed/VPS)    |
+| **Auth**         | JWT (access 15dk + refresh 7gün, HTTP-only cookie) |
+| **Validasyon**   | Zod (body/query/params şemaları)              |
+| **Medya**        | Dev: local `uploads/`, Prod: S3/Cloudflare R2 |
+| **Güvenlik**     | Helmet, CORS, Rate limit, bcrypt(12)          |
+| **Loglama**      | Pino (JSON) + Morgan (HTTP access)            |
+| **Dokümantasyon**| OpenAPI 3.0 (Swagger UI)                      |
+| **Test**         | Vitest + Supertest                            |
+| **Linting**      | ESLint + Prettier + lint-staged               |
+
+---
+
+# 3) Klasör Yapısı
+
+```
+ckblog-backend/
+├─ src/
+│  ├─ config/
+│  │  ├─ env.ts          # Zod ile env validasyonu
+│  │  ├─ database.ts     # Prisma client instance
+│  │  └─ cors.ts         # CORS config
+│  │
+│  ├─ middleware/
+│  │  ├─ auth.ts         # requireAuth(roles?) guard
+│  │  ├─ validate.ts     # Zod schema validation middleware
+│  │  ├─ rateLimiter.ts  # Rate limit config
+│  │  ├─ upload.ts       # Multer config
+│  │  └─ errorHandler.ts # Global hata yönetimi
+│  │
+│  ├─ modules/
+│  │  ├─ auth/
+│  │  │  ├─ auth.routes.ts
+│  │  │  ├─ auth.controller.ts
+│  │  │  ├─ auth.service.ts
+│  │  │  └─ auth.schema.ts     # Zod şemaları
+│  │  │
+│  │  ├─ posts/
+│  │  │  ├─ posts.routes.ts
+│  │  │  ├─ posts.controller.ts
+│  │  │  ├─ posts.service.ts
+│  │  │  └─ posts.schema.ts
+│  │  │
+│  │  ├─ projects/
+│  │  │  ├─ projects.routes.ts
+│  │  │  ├─ projects.controller.ts
+│  │  │  ├─ projects.service.ts
+│  │  │  └─ projects.schema.ts
+│  │  │
+│  │  ├─ tags/
+│  │  │  ├─ tags.routes.ts
+│  │  │  ├─ tags.controller.ts
+│  │  │  └─ tags.service.ts
+│  │  │
+│  │  ├─ categories/
+│  │  │  ├─ categories.routes.ts
+│  │  │  ├─ categories.controller.ts
+│  │  │  └─ categories.service.ts
+│  │  │
+│  │  └─ media/
+│  │     ├─ media.routes.ts
+│  │     ├─ media.controller.ts
+│  │     └─ media.service.ts
+│  │
+│  ├─ utils/
+│  │  ├─ slugify.ts      # Türkçe karakter desteği ile slug
+│  │  ├─ pagination.ts   # Sayfalama helper
+│  │  ├─ jwt.ts          # Token sign/verify
+│  │  └─ response.ts     # Standart response builder
+│  │
+│  ├─ types/
+│  │  └─ index.ts        # Global TypeScript tipleri
+│  │
+│  ├─ app.ts             # Express app setup (middleware chain)
+│  └─ server.ts          # HTTP server start
+│
+├─ prisma/
+│  ├─ schema.prisma      # Veri modeli
+│  ├─ seed.ts            # Admin kullanıcı seed
+│  └─ migrations/        # Prisma migration dosyaları
+│
+├─ tests/
+│  ├─ auth.test.ts
+│  ├─ posts.test.ts
+│  └─ setup.ts           # Test DB setup
+│
+├─ docker-compose.yml    # Postgres + API (dev)
+├─ Dockerfile            # Production image
+├─ .env                  # Lokal env
+├─ .env.example          # Şablon
+├─ tsconfig.json
+├─ package.json
+└─ vitest.config.ts
+```
+
+---
+
+# 4) Veri Modeli (Prisma Schema)
+
+### User
+```
+id          String    @id @default(uuid())
+name        String
+email       String    @unique
+passwordHash String
+role        Role      @default(ADMIN)  // enum: ADMIN, AUTHOR
+createdAt   DateTime  @default(now())
+updatedAt   DateTime  @updatedAt
+posts       Post[]
+media       Media[]
+```
+
+### Post
+```
+id            String    @id @default(uuid())
+title         String
+slug          String    @unique
+excerpt       String
+content       String    // Markdown
+coverImageUrl String?
+status        PostStatus @default(DRAFT)  // enum: DRAFT, PUBLISHED, ARCHIVED
+publishedAt   DateTime?
+readingTime   Int?      // Dakika (otomatik hesapla)
+authorId      String
+author        User      @relation(...)
+categories    Category[] @relation("PostCategories")
+tags          Tag[]      @relation("PostTags")
+createdAt     DateTime  @default(now())
+updatedAt     DateTime  @updatedAt
+```
+
+### Category
+```
+id          String   @id @default(uuid())
+name        String   @unique
+slug        String   @unique
+description String?
+posts       Post[]   @relation("PostCategories")
+```
+
+### Tag
+```
+id    String @id @default(uuid())
+name  String @unique
+slug  String @unique
+posts Post[] @relation("PostTags")
+```
+
+### Project
+```
+id            String        @id @default(uuid())
+title         String
+slug          String        @unique
+summary       String
+content       String?       // Markdown (detay sayfası)
+repoUrl       String?
+liveUrl       String?
+techStack     String[]      // Array of strings
+coverImageUrl String?
+status        ProjectStatus @default(ACTIVE) // enum: ACTIVE, ARCHIVED
+order         Int           @default(0)      // Sıralama
+createdAt     DateTime      @default(now())
+updatedAt     DateTime      @updatedAt
+```
+
+### Media
+```
+id         String   @id @default(uuid())
+url        String
+key        String   // S3 path veya local dosya yolu
+mime       String
+size       Int      // Byte
+uploaderId String
+uploader   User     @relation(...)
+createdAt  DateTime @default(now())
+```
+
+### RefreshToken
+```
+id        String    @id @default(uuid())
+userId    String
+user      User      @relation(...)
+token     String    @unique
+expiresAt DateTime
+revokedAt DateTime?
+createdAt DateTime  @default(now())
+```
+
+---
+
+# 5) API Uçları (REST)
+
+## Auth
+| Method | Path                      | Auth    | Açıklama                              |
+|--------|---------------------------|---------|---------------------------------------|
+| POST   | `/api/v1/auth/login`      | Public  | Email + şifre → accessToken + cookie  |
+| POST   | `/api/v1/auth/refresh`    | Cookie  | Yeni accessToken                      |
+| POST   | `/api/v1/auth/logout`     | Auth    | Refresh token revoke + cookie temizle |
+| GET    | `/api/v1/auth/me`         | Auth    | Kullanıcı profili                     |
+
+## Posts
+| Method | Path                        | Auth    | Açıklama                              |
+|--------|-----------------------------|---------|---------------------------------------|
+| GET    | `/api/v1/posts`             | Public  | Liste (query: status, search, page, pageSize, tag, category) |
+| GET    | `/api/v1/posts/:slug`       | Public  | Detay (slug ile)                      |
+| POST   | `/api/v1/posts`             | Admin   | Yeni yazı oluştur                     |
+| PUT    | `/api/v1/posts/:id`         | Admin   | Yazı düzenle                          |
+| DELETE | `/api/v1/posts/:id`         | Admin   | Yazı sil                              |
+| POST   | `/api/v1/posts/:id/publish` | Admin   | Yayınla (publishedAt set)             |
+
+## Projects
+| Method | Path                       | Auth    | Açıklama          |
+|--------|----------------------------|---------|-------------------|
+| GET    | `/api/v1/projects`         | Public  | Liste (status=ACTIVE) |
+| GET    | `/api/v1/projects/:slug`   | Public  | Detay             |
+| POST   | `/api/v1/projects`         | Admin   | Yeni proje        |
+| PUT    | `/api/v1/projects/:id`     | Admin   | Düzenle           |
+| DELETE | `/api/v1/projects/:id`     | Admin   | Sil               |
+
+## Tags & Categories
+| Method | Path                    | Auth    | Açıklama    |
+|--------|-------------------------|---------|-------------|
+| GET    | `/api/v1/tags`          | Public  | Tüm tag'ler |
+| POST   | `/api/v1/tags`          | Admin   | Yeni tag    |
+| DELETE | `/api/v1/tags/:id`      | Admin   | Sil         |
+| GET    | `/api/v1/categories`    | Public  | Tüm kategoriler |
+| POST   | `/api/v1/categories`    | Admin   | Yeni kategori |
+| DELETE | `/api/v1/categories/:id`| Admin   | Sil         |
+
+## Media
+| Method | Path                  | Auth  | Açıklama                |
+|--------|-----------------------|-------|-------------------------|
+| POST   | `/api/v1/media`       | Admin | Multipart upload → URL  |
+| GET    | `/api/v1/media`       | Admin | Medya listesi           |
+| DELETE | `/api/v1/media/:id`   | Admin | Dosya sil               |
+
+## Utility
+| Method | Path                     | Auth   | Açıklama           |
+|--------|--------------------------|--------|---------------------|
+| GET    | `/api/v1/health`         | Public | DB + storage durumu |
+| GET    | `/api/v1/sitemap.xml`    | Public | Dinamik sitemap     |
+
+## Response Formatı
+
+### Başarı (Liste)
+```json
+{
+  "data": [...],
+  "meta": { "page": 1, "pageSize": 10, "total": 42, "totalPages": 5 }
+}
+```
+
+### Başarı (Tekil)
+```json
+{
+  "data": { ... }
+}
+```
+
+### Hata
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title is required",
+    "details": [{ "field": "title", "message": "Required" }]
+  }
+}
+```
+
+---
+
+# 6) Middleware Katmanı
+
+### Global Middleware Sırası
+```
+1. Helmet (güvenlik header'ları)
+2. CORS (frontend origin only)
+3. Morgan (HTTP access log, dev modda)
+4. express.json({ limit: '10mb' })
+5. Rate limiter (global: 100 req/15dk, auth: 5 req/15dk)
+6. Routes
+7. 404 handler
+8. Global error handler
+```
+
+### Auth Guard
+```typescript
+requireAuth(roles?: Role[])
+// 1. Header'dan Bearer token al
+// 2. JWT verify
+// 3. Role kontrolü (opsiyonel)
+// 4. req.user'a kullanıcıyı ekle
+```
+
+### Validation Middleware
+```typescript
+validate(schema: ZodSchema, target: 'body' | 'query' | 'params')
+// 1. Zod schema ile parse
+// 2. Başarısızsa → 400 + error details
+```
+
+---
+
+# 7) Güvenlik
+
+| Önlem               | Uygulama                                    |
+|----------------------|----------------------------------------------|
+| Parola hash          | bcrypt(12 rounds)                            |
+| Refresh token        | HTTP-only cookie, SameSite=Lax, Secure=true (prod) |
+| Access token         | 15 dakika ömür, response body'de             |
+| CORS                 | Sadece frontend origin                       |
+| Rate limit           | Login: 5 req/15dk/IP, Write: 20 req/15dk    |
+| Input sanitization   | Zod validation + XSS koruma (frontend tarafında DOMPurify) |
+| Helmet               | X-Frame-Options, HSTS, Content-Type-Options  |
+| Env secrets          | .env, asla git'e commit etme                 |
+
+---
+
+# 8) Slug Stratejisi
+
+```typescript
+// utils/slugify.ts
+// 1. Türkçe karakterleri dönüştür (ü→u, ş→s, ğ→g, ç→c, ö→o, ı→i)
+// 2. Küçük harfe çevir
+// 3. Alfanümerik olmayan → tire
+// 4. Ardışık tire → tek tire
+// 5. Baş/son tireleri kaldır
+// 6. Çakışma kontrolü: varsa sonuna -2, -3 ekle
+```
+
+---
+
+# 9) Geliştirme Akışı (Adım Adım)
+
+1. **Proje İskeleti**
+   - `pnpm init`, TypeScript setup, Express + temel bağımlılıklar
+   - `docker-compose.yml` — Postgres + pgAdmin (dev)
+   - `prisma init` — schema + ilk migration
+
+2. **Config & Middleware**
+   - Env validasyonu (Zod), Helmet, CORS, Morgan, Rate limit
+   - Global error handler
+
+3. **Auth Modülü**
+   - Register (seed-only), Login, Refresh, Logout, Me
+   - JWT sign/verify utility
+   - Seed script: tek admin kullanıcı
+
+4. **Post CRUD**
+   - Tüm endpoints, Zod validation, slug otomatik üretimi
+   - Sayfalama, arama (LIKE), kategori/tag filtre
+   - ReadingTime otomatik hesaplama
+
+5. **Project CRUD**
+   - endpoints + slug + techStack array
+
+6. **Tag & Category CRUD**
+   - Slug otomatik, POST/GET/DELETE
+
+7. **Media Upload**
+   - Multer config, dev: `uploads/` klasörü, prod: S3/R2
+   - Dosya boyutu limiti (5MB), mime type kontrolü (image/*)
+
+8. **Utility Endpoints**
+   - Health check (DB ping)
+   - Sitemap.xml (yayında olan post/project'lardan)
+
+9. **OpenAPI/Swagger**
+   - Temel şemalar + endpoint tanımları
+
+10. **Testler**
+    - Auth akışı (login → token → me → logout)
+    - Post CRUD (create → list → update → delete)
+    - Setup: test DB, before/after cleanup
+
+11. **Deploy Hazırlığı**
+    - Dockerfile (multi-stage build)
+    - docker-compose.prod.yml
+    - `.env.example` şablonu
+    - ESLint + Prettier + precommit hook
+
+---
+
+# 10) Environment Değişkenleri
+
+```env
+# Server
+PORT=3001
+NODE_ENV=development
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/ckblog
+
+# JWT
+JWT_ACCESS_SECRET=<random-string>
+JWT_REFRESH_SECRET=<random-string>
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
+
+# CORS
+CORS_ORIGIN=http://localhost:5173
+
+# Storage (prod)
+STORAGE_PROVIDER=local  # local | s3
+S3_BUCKET=ckblog-media
+S3_REGION=eu-central-1
+S3_ACCESS_KEY=...
+S3_SECRET_KEY=...
+
+# Admin Seed
+ADMIN_EMAIL=admin@ckblog.com
+ADMIN_PASSWORD=<secure-password>
+ADMIN_NAME=Admin
+```
+
+---
+
+# 11) Dağıtım (Deploy)
+
+## A) VPS (Docker Compose)
+```yaml
+services:
+  api:
+    build: .
+    ports: ["3001:3001"]
+    env_file: .env.production
+    depends_on: [db]
+
+  db:
+    image: postgres:16-alpine
+    volumes: [pgdata:/var/lib/postgresql/data]
+    environment:
+      POSTGRES_DB: ckblog
+      POSTGRES_USER: ckblog_user
+      POSTGRES_PASSWORD: <secure>
+
+  nginx:
+    image: nginx:alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - certbot-certs:/etc/letsencrypt
+
+volumes:
+  pgdata:
+  certbot-certs:
+```
+
+## B) PaaS (Alternatif)
+- Backend: Render / Railway / Fly.io
+- DB: Managed Postgres (Neon / Supabase / Railway)
+- Medya: Cloudinary / R2
+
+---
+
+# 12) CI/CD (GitHub Actions)
+
+```yaml
+# Ana akış:
+# push to main → install → lint → test → build → prisma migrate deploy → deploy
+```
+
+- Lint: `eslint + prettier`
+- Test: `vitest run`
+- Build: `tsc`
+- Migrate: `npx prisma migrate deploy`
+- Deploy: Docker push + restart (VPS) veya Render auto-deploy
+
+---
+
+# 13) İzleme & Loglama
+
+| Araç           | Amaç                  |
+|----------------|------------------------|
+| Pino (JSON)    | Uygulama logları       |
+| Morgan         | HTTP access logları    |
+| Health endpoint| Uptime monitoring      |
+| UptimeRobot    | Dış uptime alertleri   |
+| Sentry (ops.)  | Hata takibi            |
+
+---
+
+# 14) Yol Haritası
+
+| Faz           | Süre    | Kapsam                                     |
+|---------------|---------|---------------------------------------------|
+| **MVP**       | 1-2 hafta| Auth, Post/Project CRUD, Tag/Cat, Media, Sitemap |
+| **v1.1**      | +1 hafta | Postgres full-text search, pagination opt.  |
+| **v1.2**      | +1 hafta | Çoklu yazar (role: AUTHOR), taslak önizleme |
+| **İleri**     | Gelecek  | Slug history, webhook entegrasyonu, analytics |
