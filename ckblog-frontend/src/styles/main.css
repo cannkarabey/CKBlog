@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 /* ============================================
-   CKBlog — "Midnight Dev" Design System
+   CKBlog — "Neon Purple" Design System
    ============================================ */
 
 @theme {
   /* --- Colors --- */
-  --color-bg-primary: #0a0e1a;
-  --color-bg-surface: #111827;
-  --color-bg-surface-alt: #1a2332;
-  --color-bg-elevated: #1e293b;
+  --color-bg-primary: #0a0a14;
+  --color-bg-surface: #12111f;
+  --color-bg-surface-alt: #1a1828;
+  --color-bg-elevated: #221f35;
 
-  --color-border-default: #1e293b;
-  --color-border-active: #334155;
+  --color-border-default: #2a2540;
+  --color-border-active: #3d3660;
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  --color-text-primary: #f0eef8;
+  --color-text-secondary: #a8a0c0;
+  --color-text-muted: #6e6590;
 
-  --color-accent: #38bdf8;
-  --color-accent-glow: #0ea5e9;
-  --color-accent-badge: #1e3a5f;
-  --color-accent-badge-text: #7dd3fc;
+  --color-accent: #c084fc;
+  --color-accent-glow: #a855f7;
+  --color-accent-badge: #2e1065;
+  --color-accent-badge-text: #d8b4fe;
 
   --color-success: #10b981;
   --color-error: #ef4444;
@@ -88,22 +88,22 @@ body,
    Light Mode Override
    ============================================ */
 html.light {
-  --color-bg-primary: #f8fafc;
+  --color-bg-primary: #faf8ff;
   --color-bg-surface: #ffffff;
-  --color-bg-surface-alt: #f1f5f9;
-  --color-bg-elevated: #e2e8f0;
+  --color-bg-surface-alt: #f3f0fa;
+  --color-bg-elevated: #e8e0f5;
 
-  --color-border-default: #e2e8f0;
-  --color-border-active: #cbd5e1;
+  --color-border-default: #e2daf0;
+  --color-border-active: #c9b8e8;
 
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94a3b8;
+  --color-text-primary: #1a0f2e;
+  --color-text-secondary: #5b4a78;
+  --color-text-muted: #8a7da0;
 
-  --color-accent: #0284c7;
-  --color-accent-glow: #0369a1;
-  --color-accent-badge: #e0f2fe;
-  --color-accent-badge-text: #0369a1;
+  --color-accent: #9333ea;
+  --color-accent-glow: #7e22ce;
+  --color-accent-badge: #f3e8ff;
+  --color-accent-badge-text: #7e22ce;
 }
 
 /* ============================================
@@ -173,12 +173,12 @@ pre {
 @utility card-surface-hover {
   &:hover {
     border-color: var(--color-border-active);
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.05);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.08);
   }
 }
 
 @utility glow-accent {
-  box-shadow: 0 0 12px rgba(14, 165, 233, 0.15);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
 }
 
 @utility text-gradient {
