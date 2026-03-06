@@ -52,7 +52,7 @@ watch(() => route.path, closeMobile)
     <div class="header-inner container-main">
       <!-- Logo -->
       <router-link :to="`/${locale}`" class="logo">
-        CKBlog<span class="logo-dot">.</span>
+        CKBlog<span class="logo-dot"></span>
       </router-link>
 
       <!-- Desktop Nav -->
