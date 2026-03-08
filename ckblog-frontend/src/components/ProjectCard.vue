@@ -16,7 +16,10 @@ const { locale } = useI18n()
 </script>
 
 <template>
-  <div class="card-surface card-surface-hover p-0 overflow-hidden group">
+  <router-link
+    :to="`/${locale}/projects/${slug}`"
+    class="group block card-surface card-surface-hover p-0 overflow-hidden no-underline cursor-pointer"
+  >
     <!-- Cover Image -->
     <div class="aspect-video overflow-hidden bg-bg-surface-alt">
       <img
@@ -34,12 +37,9 @@ const { locale } = useI18n()
     <!-- Content -->
     <div class="p-5 flex flex-col gap-3">
       <!-- Title -->
-      <router-link
-        :to="`/${locale}/projects/${slug}`"
-        class="text-lg font-semibold text-text-primary leading-snug no-underline hover:text-accent transition-colors duration-200"
-      >
+      <h3 class="text-lg font-semibold text-text-primary leading-snug m-0 group-hover:text-accent transition-colors duration-200">
         {{ title }}
-      </router-link>
+      </h3>
 
       <!-- Summary -->
       <p class="text-sm text-text-secondary line-clamp-2 m-0">
@@ -65,6 +65,7 @@ const { locale } = useI18n()
           target="_blank"
           rel="noopener"
           class="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-accent transition-colors duration-200 no-underline"
+          @click.stop
         >
           <Github class="w-3.5 h-3.5" />
           GitHub
@@ -75,11 +76,12 @@ const { locale } = useI18n()
           target="_blank"
           rel="noopener"
           class="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-accent transition-colors duration-200 no-underline"
+          @click.stop
         >
           <ExternalLink class="w-3.5 h-3.5" />
           Live
         </a>
       </div>
     </div>
-  </div>
+  </router-link>
 </template>
