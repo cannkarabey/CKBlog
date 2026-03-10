@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  base: '/CKBlog/',
+  base: process.env.NODE_ENV === 'production' ? '/CKBlog/' : '/',
   plugins: [vue(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
 })
