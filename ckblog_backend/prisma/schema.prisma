@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  AUTHOR
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  role          Role           @default(ADMIN)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  posts         Post[]
+  media         Media[]
+  refreshTokens RefreshToken[]
+}
+
+model Post {
+  id            String     @id @default(uuid())
+  title         String
+  slug          String     @unique
+  excerpt       String
+  content       String
+  coverImageUrl String?
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?
+  readingTime   Int?
+  authorId      String
+  author        User       @relation(fields: [authorId], references: [id])
+  categories    Category[] @relation("PostCategories")
+  tags          Tag[]      @relation("PostTags")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([status])
+  @@index([slug])
+  @@index([authorId])
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  posts       Post[]  @relation("PostCategories")
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String @unique
+  posts Post[] @relation("PostTags")
+}
+
+model Project {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  summary       String
+  content       String?
+  repoUrl       String?
+  liveUrl       String?
+  techStack     String[]
+  coverImageUrl String?
+  status        ProjectStatus @default(ACTIVE)
+  order         Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+  @@index([slug])
+}
+
+model Media {
+  id         String   @id @default(uuid())
+  url        String
+  key        String
+  mime       String
+  size       Int
+  uploaderId String
+  uploader   User     @relation(fields: [uploaderId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([uploaderId])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  token     String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
