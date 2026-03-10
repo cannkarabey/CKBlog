@@ -3,8 +3,6 @@ import type { RouteRecordRaw } from "vue-router";
 import i18n from "../i18n";
 import { useAuthStore } from "../stores/auth";
 
-const isMock = import.meta.env.VITE_USE_MOCK === "1";
-
 const routes: RouteRecordRaw[] = [
   {
     path: "/:locale(tr|en)?",
@@ -48,8 +46,6 @@ router.beforeEach(async (to) => {
   // (locale senkronu burada kalabilir)
 
   // 🔐 Guard
-  if (isMock) return true; // mock modda engel yok
-
   const auth = useAuthStore();
 
   // loginli ama store boş ise me'yi çek

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import PostCard from "@/components/PostCard.vue";
 import { Search, X } from "lucide-vue-next";
+import { getList } from "@/api/posts";
 
 const { t } = useI18n();
 
@@ -12,44 +13,27 @@ type PostItem = {
   readingTime: number; tags: string[];
 };
 
-const allPosts = ref<PostItem[]>([
-  { id:"1",  title:"Vue 3 Composition API", slug:"vue-3-composition-101",
-    coverImage:"https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Setup fonksiyonu, reactive, ref ve computed kullanımıyla modern Vue geliştirme.", date:"2025-08-20", readingTime:5, tags:["vue","composition"] },
-  { id:"2",  title:"Prisma ile ORM Akışı", slug:"prisma-orm-akis",
-    coverImage:"https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Model tanımlama, migration ve query zinciri ile veritabanı yönetimi.", date:"2025-08-18", readingTime:7, tags:["node","prisma"] },
-  { id:"3",  title:"Markdown'dan Blog'a", slug:"markdown-dan-bloga",
-    coverImage:"https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Markdown dosyalarını dinamik blog içeriğine dönüştürmenin pratik yolları.", date:"2025-08-10", readingTime:4, tags:["blog","content"] },
-  { id:"4",  title:"Router Guard İpuçları", slug:"router-guard-ipuclari",
-    coverImage:"https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Auth guard, locale yönlendirme ve scrollBehavior ayarları.", date:"2025-07-28", readingTime:6, tags:["vue-router","tips"] },
-  { id:"5",  title:"TypeScript ile Vue", slug:"typescript-ile-vue",
-    coverImage:"https://images.unsplash.com/photo-1510915361894-db8b60106cb1?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Props, emits ve generics ile tip-güvenli Vue bileşenleri oluşturma.", date:"2025-07-20", readingTime:8, tags:["typescript","vue"] },
-  { id:"6",  title:"Axios Interceptor Yapısı", slug:"axios-interceptor-yapisi",
-    coverImage:"https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Refresh token yönetimi ve otomatik retry mekanizması kurulumu.", date:"2025-07-12", readingTime:6, tags:["axios","auth"] },
-  { id:"7",  title:"Vite Performans İpuçları", slug:"vite-performans-ipuclari",
-    coverImage:"https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Kod bölme, lazy import ve bundle optimizasyonu ile hızlı uygulamalar.", date:"2025-06-30", readingTime:5, tags:["vite","performance"] },
-  { id:"8",  title:"Pinia Store Desenleri", slug:"pinia-store-desenleri",
-    coverImage:"https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Getter, action ve composition store ile state management pratikleri.", date:"2025-06-25", readingTime:7, tags:["pinia","state"] },
-  { id:"9",  title:"Inter Tipografi Sistemi", slug:"ui-inter-tipografi",
-    coverImage:"https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"CSS clamp, fluid typography ve responsive ölçek tasarımı.", date:"2025-06-15", readingTime:4, tags:["ui","typography"] },
-  { id:"10", title:"SEO Head Yönetimi", slug:"seo-icin-head-yonetimi",
-    coverImage:"https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Open Graph meta tagları ve dinamik title yönetimi.", date:"2025-06-02", readingTime:5, tags:["seo","head"] },
-  { id:"11", title:"Dark Mode Tasarım", slug:"dark-mode-tasarim",
-    coverImage:"https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Renk kontrastı, CSS custom property ve token tabanlı tema sistemi.", date:"2025-05-28", readingTime:6, tags:["ui","a11y"] },
-  { id:"12", title:"Deploy: Netlify & Vercel", slug:"deploy-netlify-vercel",
-    coverImage:"https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1600&auto=format&fit=crop",
-    excerpt:"Build konfigürasyonu, preview deployment ve CI/CD entegrasyonu.", date:"2025-05-20", readingTime:5, tags:["deploy","cd"] },
-]);
+const allPosts = ref<PostItem[]>([]);
+
+onMounted(async () => {
+  try {
+    const posts = await getList();
+    allPosts.value = posts.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      coverImage: p.coverImageUrl || "",
+      excerpt: p.excerpt || "",
+      date: p.publishedAt || p.createdAt || "",
+      readingTime: p.readingTime || 1,
+      tags: Array.isArray(p.tags)
+        ? p.tags.map((t: any) => (typeof t === "string" ? t : t.name))
+        : [],
+    }));
+  } catch (e) {
+    console.error("Failed to load posts", e);
+  }
+});
 
 /* Collect unique tags for filter pills */
 const allTags = computed(() => {

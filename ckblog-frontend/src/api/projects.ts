@@ -1,5 +1,4 @@
 import http from "./http";
-import { mockProjects } from "@/mocks/projects";
 
 export interface ProjectCard {
   id: string;
@@ -16,41 +15,26 @@ export interface ProjectCard {
   content?: string;
 }
 
-const isMock = import.meta.env.VITE_USE_MOCK === "1";
-
 /** Liste */
 export async function getList(): Promise<ProjectCard[]> {
-  if (isMock) {
-    await new Promise((r) => setTimeout(r, 200));
-    return mockProjects;
-  }
   const { data } = await http.get("/projects");
   return data.data as ProjectCard[];
 }
 
-/** Tek getirme */
+/** Tek getirme (admin — by ID) */
 export async function getById(id: string): Promise<ProjectCard> {
-  if (isMock) {
-    const found = mockProjects.find((p) => p.id === id);
-    return found || ({} as ProjectCard);
-  }
   const { data } = await http.get(`/projects/${id}`);
+  return data.data as ProjectCard;
+}
+
+/** Tek getirme (public — by slug) */
+export async function getBySlug(slug: string): Promise<ProjectCard> {
+  const { data } = await http.get(`/projects/slug/${slug}`);
   return data.data as ProjectCard;
 }
 
 /** Kaydet (create / update) */
 export async function save(payload: ProjectCard, id?: string): Promise<ProjectCard> {
-  if (isMock) {
-    if (id) {
-      const idx = mockProjects.findIndex((p) => p.id === id);
-      if (idx >= 0) mockProjects[idx] = { ...mockProjects[idx], ...payload };
-      return mockProjects[idx];
-    } else {
-      const newItem: ProjectCard = { ...payload, id: String(Date.now()) };
-      mockProjects.push(newItem);
-      return newItem;
-    }
-  }
   if (id) {
     const { data } = await http.put(`/projects/${id}`, payload);
     return data.data as ProjectCard;
@@ -62,10 +46,5 @@ export async function save(payload: ProjectCard, id?: string): Promise<ProjectCa
 
 /** Silme */
 export async function remove(id: string): Promise<void> {
-  if (isMock) {
-    const idx = mockProjects.findIndex((p) => p.id === id);
-    if (idx >= 0) mockProjects.splice(idx, 1);
-    return;
-  }
   await http.delete(`/projects/${id}`);
 }

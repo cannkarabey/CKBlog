@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import ProjectCard from "@/components/ProjectCard.vue";
 import { Search, X } from "lucide-vue-next";
+import { getList } from "@/api/projects";
 
 const { t } = useI18n();
 
@@ -13,38 +14,25 @@ type ProjectItem = {
   repoUrl?: string; liveUrl?: string;
 };
 
-const allProjects = ref<ProjectItem[]>([
-  { id: "p1", title: "CVE Explorer", slug: "cve-explorer",
-    coverImage: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop",
-    summary: "Elasticsearch tabanlı güvenlik açığı arama ve analiz platformu.",
-    techStack: ["Vue", "Elasticsearch", "Node.js"],
-    repoUrl: "https://github.com", liveUrl: "https://example.com" },
-  { id: "p2", title: "YOLOv8 Drone", slug: "yolov8-drone",
-    coverImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop",
-    summary: "Drone üzerinde gerçek zamanlı nesne tespiti sistemi.",
-    techStack: ["Python", "YOLOv8", "OpenCV"],
-    repoUrl: "https://github.com" },
-  { id: "p3", title: "CKBlog", slug: "ckblog",
-    coverImage: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1600&auto=format&fit=crop",
-    summary: "Bu blogun kendisi — Vue 3, Tailwind CSS, i18n ve admin panel.",
-    techStack: ["Vue 3", "Tailwind", "TypeScript"],
-    repoUrl: "https://github.com" },
-  { id: "p4", title: "Öğrenci Portal", slug: "ogrenci-portal",
-    coverImage: "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1600&auto=format&fit=crop",
-    summary: "Not ve ders yönetimi uygulaması. Express + PostgreSQL backend.",
-    techStack: ["Vue", "Express", "PostgreSQL"],
-    repoUrl: "https://github.com" },
-  { id: "p5", title: "Portfolio", slug: "portfolio",
-    coverImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop",
-    summary: "Kişisel site ve portfolyo. Responsive tasarım, dark mode.",
-    techStack: ["Vue", "Tailwind"],
-    repoUrl: "https://github.com", liveUrl: "https://example.com" },
-  { id: "p6", title: "CK Notes", slug: "ck-notes",
-    coverImage: "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=1600&auto=format&fit=crop",
-    summary: "Tarayıcı içi not alma uygulaması. IndexedDB ile offline destek.",
-    techStack: ["Vue", "IndexedDB"],
-    repoUrl: "https://github.com" },
-]);
+const allProjects = ref<ProjectItem[]>([]);
+
+onMounted(async () => {
+  try {
+    const projects = await getList();
+    allProjects.value = projects.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      coverImage: p.coverImageUrl || "",
+      summary: p.summary || "",
+      techStack: p.techStack || [],
+      repoUrl: p.repoUrl,
+      liveUrl: p.liveUrl,
+    }));
+  } catch (e) {
+    console.error("Failed to load projects", e);
+  }
+});
 
 /* Collect unique techs for filter pills */
 const allTechs = computed(() => {

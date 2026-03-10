@@ -13,6 +13,10 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { prisma } from "./config/database.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import postRoutes from "./modules/posts/posts.routes.js";
+import projectRoutes from "./modules/projects/projects.routes.js";
+import tagRoutes from "./modules/tags/tags.routes.js";
+import categoryRoutes from "./modules/categories/categories.routes.js";
+import mediaRoutes from "./modules/media/media.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +38,10 @@ app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 // --- API Routes ---
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/posts", postRoutes);
+app.use("/api/v1/projects", projectRoutes);
+app.use("/api/v1/tags", tagRoutes);
+app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/media", mediaRoutes);
 
 // --- Health Check ---
 app.get("/api/v1/health", async (_req, res) => {

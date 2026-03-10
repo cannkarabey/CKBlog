@@ -7,7 +7,7 @@ import SaveButton from "@/components/SaveButton.vue";
 import CommentBox from "@/components/CommentBox.vue";
 import { ArrowLeft, Calendar, Clock, Share2, Link2, Tag } from "lucide-vue-next";
 
-import { getMockPostBySlug } from "@/mocks/posts";
+import { getBySlug } from "@/api/posts";
 
 type PostLike = {
   id: string;
@@ -52,21 +52,21 @@ const doubled = computed(() => count.value * 2)</code></pre>
   <p>Daha fazla bilgi için resmi <a href="https://vuejs.org">Vue.js</a> dokümantasyonuna göz atabilirsiniz.</p>
 `;
 
-onMounted(() => {
-  const data = getMockPostBySlug(slug) as PostLike | null;
-  if (!data) {
+onMounted(async () => {
+  try {
+    const data = await getBySlug(slug) as PostLike;
+    post.value = data;
+
+    useSeo({
+      title: data.title,
+      description: data.excerpt,
+      image: data.image || data.coverImageUrl || fallbackImage,
+    });
+  } catch {
     router.replace({ name: "blog-list", params: { locale: route.params.locale || "tr" } });
-    return;
+  } finally {
+    loading.value = false;
   }
-  post.value = data;
-
-  useSeo({
-    title: data.title,
-    description: data.excerpt,
-    image: data.image || data.coverImageUrl || fallbackImage,
-  });
-
-  loading.value = false;
 });
 
 const dateFormatted = computed(() => {

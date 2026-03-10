@@ -1,71 +1,51 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ArrowRight, Code, Terminal } from 'lucide-vue-next'
 import PostCard from '@/components/PostCard.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
+import { getList as getPostList } from '@/api/posts'
+import { getList as getProjectList } from '@/api/projects'
 
 const { t, locale } = useI18n()
 
-const recentPosts = [
-  {
-    id: '1',
-    title: 'Vue 3 Composition API',
-    slug: 'vue-3-composition-101',
-    coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop',
-    excerpt: 'Setup, reactive, ref, computed ve watchEffect kullanarak modern Vue bileşenleri oluşturma rehberi.',
-    date: '2025-08-20',
-    readingTime: 5,
-    tags: ['Vue', 'Composition API'],
-  },
-  {
-    id: '2',
-    title: 'Prisma ile ORM Akışı',
-    slug: 'prisma-orm-akis',
-    coverImage: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?q=80&w=800&auto=format&fit=crop',
-    excerpt: 'Model tanımı, migration, query zinciri ve TypeScript entegrasyonu adım adım.',
-    date: '2025-08-18',
-    readingTime: 4,
-    tags: ['Node.js', 'Prisma'],
-  },
-  {
-    id: '3',
-    title: 'Markdown\'dan Blog\'a',
-    slug: 'markdown-dan-bloga',
-    coverImage: 'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=800&auto=format&fit=crop',
-    excerpt: 'Markdown içerik yönetimi, sanitizasyon ve güvenli render stratejileri.',
-    date: '2025-08-10',
-    readingTime: 3,
-    tags: ['Blog', 'Content'],
-  },
-]
+const recentPosts = ref<any[]>([])
+const featuredProjects = ref<any[]>([])
 
-const featuredProjects = [
-  {
-    title: 'CVE Explorer',
-    slug: 'cve-explorer',
-    coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop',
-    summary: 'Elasticsearch tabanlı güvenlik açığı arama ve analiz platformu.',
-    techStack: ['Vue', 'Elasticsearch', 'Node.js'],
-    repoUrl: 'https://github.com',
-    liveUrl: 'https://example.com',
-  },
-  {
-    title: 'YOLOv8 Drone',
-    slug: 'yolov8-drone',
-    coverImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop',
-    summary: 'Gerçek zamanlı drone görüntülerinde nesne tespiti sistemi.',
-    techStack: ['Python', 'YOLOv8', 'OpenCV'],
-    repoUrl: 'https://github.com',
-  },
-  {
-    title: 'CKBlog',
-    slug: 'ckblog',
-    coverImage: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop',
-    summary: 'Bu blogun kendisi — Vue 3, Tailwind CSS, i18n ve admin panel.',
-    techStack: ['Vue 3', 'Tailwind', 'TypeScript'],
-    repoUrl: 'https://github.com',
-  },
-]
+onMounted(async () => {
+  try {
+    const posts = await getPostList()
+    recentPosts.value = posts.slice(0, 3).map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      coverImage: p.coverImageUrl || '',
+      excerpt: p.excerpt || '',
+      date: p.publishedAt || p.createdAt || '',
+      readingTime: p.readingTime || 1,
+      tags: Array.isArray(p.tags)
+        ? p.tags.map((t: any) => (typeof t === 'string' ? t : t.name))
+        : [],
+    }))
+  } catch (e) {
+    console.error('Failed to load posts', e)
+  }
+
+  try {
+    const projects = await getProjectList()
+    featuredProjects.value = projects.slice(0, 3).map((p: any) => ({
+      title: p.title,
+      slug: p.slug,
+      coverImage: p.coverImageUrl || '',
+      summary: p.summary || '',
+      techStack: p.techStack || [],
+      repoUrl: p.repoUrl,
+      liveUrl: p.liveUrl,
+    }))
+  } catch (e) {
+    console.error('Failed to load projects', e)
+  }
+})
 </script>
 
 <template>

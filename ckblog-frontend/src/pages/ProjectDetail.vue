@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useSeo } from "@/composables/useSeo";
 import { ArrowLeft, Github, ExternalLink, Calendar, Shield } from "lucide-vue-next";
+import { getBySlug } from "@/api/projects";
 
 type Project = {
   id: string; title: string; slug: string;
@@ -11,143 +12,6 @@ type Project = {
   techStack?: string[]; repoUrl?: string; liveUrl?: string;
   year?: string; role?: string;
 };
-
-const mockProjects: Project[] = [
-  {
-    id: "p1",
-    title: "CVE Explorer",
-    slug: "cve-explorer",
-    coverImage: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1600&auto=format&fit=crop",
-    summary: "Elasticsearch tabanlı güvenlik açığı arama ve analiz platformu. CVE kayıtlarını hızlıca arayabilir, filtreleyebilir ve detaylarını inceleyebilirsiniz.",
-    content: `
-<h2>Mimari</h2>
-<p>Proje, Elasticsearch üzerinde indekslenen CVE verilerini Vue 3 tabanlı bir SPA ile sunar. Arama sonuçları debounce ile optimize edilmiştir.</p>
-<ul>
-  <li><strong>Frontend:</strong> Vue 3 Composition API, TypeScript</li>
-  <li><strong>Backend:</strong> Node.js + Express REST API</li>
-  <li><strong>Veritabanı:</strong> Elasticsearch 8.x</li>
-  <li><strong>Veri Kaynağı:</strong> NVD (National Vulnerability Database)</li>
-</ul>
-<h3>Öne Çıkanlar</h3>
-<ul>
-  <li>Full-text search ile milisaniye seviyesinde sorgulama</li>
-  <li>Severity (CVSS) filtresi ve tarih aralığı seçimi</li>
-  <li>Detay sayfasında referans linkleri ve etkilenen ürünler</li>
-  <li>Responsive kart tabanlı listeleme</li>
-</ul>
-<blockquote>Güvenlik açıklarını takip etmek, sadece savunma değil — bir alışkanlıktır.</blockquote>`,
-    techStack: ["Vue 3", "TypeScript", "Node.js", "Elasticsearch"],
-    repoUrl: "https://github.com/username/cve-explorer",
-    liveUrl: "https://cve.example.com",
-    year: "2025",
-    role: "Full-Stack",
-  },
-  {
-    id: "p2",
-    title: "YOLOv8 Drone",
-    slug: "yolov8-drone",
-    coverImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop",
-    summary: "Drone üzerinde gerçek zamanlı nesne tespiti. YOLOv8 modeli ile eğitim ve inference pipeline.",
-    content: `
-<h2>Proje Detayı</h2>
-<p>Bu proje, drone kameralarından gelen canlı görüntülerde YOLOv8 modeliyle nesne tespiti yapmayı amaçlar.</p>
-<ul>
-  <li><strong>Model:</strong> YOLOv8n (nano) — düşük gecikmeli inference</li>
-  <li><strong>Framework:</strong> Ultralytics + OpenCV</li>
-  <li><strong>Veri Seti:</strong> Özel etiketlenmiş drone görüntüleri</li>
-</ul>
-<h3>Sonuçlar</h3>
-<p>Model, 30 FPS hızında %87 mAP50 başarımı elde etmiştir.</p>`,
-    techStack: ["Python", "YOLOv8", "OpenCV", "Ultralytics"],
-    repoUrl: "https://github.com/username/yolov8-drone",
-    year: "2025",
-    role: "ML Engineer",
-  },
-  {
-    id: "p3",
-    title: "CKBlog",
-    slug: "ckblog",
-    coverImage: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1600&auto=format&fit=crop",
-    summary: "Kişisel blog ve proje vitrini. Komponent tabanlı arayüz, mock veri ile hızlı prototip.",
-    content: `
-<h2>Mimari</h2>
-<ul>
-  <li><strong>Frontend:</strong> Vue 3, Vite, Router, Pinia</li>
-  <li><strong>Stil:</strong> Tailwind CSS 4, Space Grotesk + DM Sans tipografi</li>
-  <li><strong>Backend:</strong> (MVP) mock veri; plan: Node/Express + Prisma</li>
-</ul>
-<h3>Öne Çıkanlar</h3>
-<ul>
-  <li>Blog, Proje ve Hakkımda sayfaları için tutarlı UI sistemi</li>
-  <li>Türkçe / İngilizce çok dilli destek (vue-i18n)</li>
-  <li>Dark mode temalı design token sistemi</li>
-  <li>Yorum ve Kaydet (mock) bileşenleri</li>
-</ul>`,
-    techStack: ["Vue 3", "TypeScript", "Vite", "Tailwind CSS", "Pinia"],
-    repoUrl: "https://github.com/username/ckblog",
-    liveUrl: "https://ckblog.example.com",
-    year: "2025",
-    role: "Frontend Developer",
-  },
-  {
-    id: "p4",
-    title: "Öğrenci Portal",
-    slug: "ogrenci-portal",
-    coverImage: "https://images.unsplash.com/photo-1484417894907-623942c8ee29?q=80&w=1600&auto=format&fit=crop",
-    summary: "Not ve ders yönetimi uygulaması. Express + PostgreSQL backend ile RESTful API.",
-    content: `
-<h2>Proje Kapsamı</h2>
-<p>Öğrencilerin derslerini, notlarını ve ödevlerini yönetebilecekleri full-stack bir web uygulaması.</p>
-<ul>
-  <li><strong>Auth:</strong> JWT tabanlı kimlik doğrulama</li>
-  <li><strong>CRUD:</strong> Ders, not, ödev işlemleri</li>
-  <li><strong>Dashboard:</strong> Özet istatistikler ve takvim görünümü</li>
-</ul>`,
-    techStack: ["Vue", "Express", "PostgreSQL", "JWT"],
-    repoUrl: "https://github.com/username/ogrenci-portal",
-    year: "2024",
-    role: "Full-Stack",
-  },
-  {
-    id: "p5",
-    title: "Portfolio",
-    slug: "portfolio",
-    coverImage: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop",
-    summary: "Kişisel site ve portfolyo. Responsive tasarım, dark mode, animasyonlar.",
-    content: `
-<h2>Tasarım Yaklaşımı</h2>
-<p>Mobile-first responsive tasarım. CSS custom property ile tema yönetimi.</p>
-<ul>
-  <li>Intersection Observer ile scroll animasyonları</li>
-  <li>Dark / Light mode geçişi</li>
-  <li>Proje ve beceri kartları</li>
-</ul>`,
-    techStack: ["Vue", "Tailwind CSS"],
-    repoUrl: "https://github.com/username/portfolio",
-    liveUrl: "https://portfolio.example.com",
-    year: "2024",
-    role: "Frontend Developer",
-  },
-  {
-    id: "p6",
-    title: "CK Notes",
-    slug: "ck-notes",
-    coverImage: "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?q=80&w=1600&auto=format&fit=crop",
-    summary: "Tarayıcı içi not alma uygulaması. IndexedDB ile offline destek.",
-    content: `
-<h2>Teknik Detaylar</h2>
-<p>Tüm veriler IndexedDB’de saklanır, sunucu gerektirmez.</p>
-<ul>
-  <li>Markdown desteği ile zengin not biçimlendirme</li>
-  <li>Etiketleme ve arama özellikleri</li>
-  <li>Export/Import (JSON format)</li>
-</ul>`,
-    techStack: ["Vue", "IndexedDB"],
-    repoUrl: "https://github.com/username/ck-notes",
-    year: "2024",
-    role: "Frontend Developer",
-  },
-];
 
 const route = useRoute();
 const router = useRouter();
@@ -157,16 +21,32 @@ const slug = route.params.slug as string;
 const loading = ref(true);
 const project = ref<Project | null>(null);
 
-onMounted(() => {
-  project.value = mockProjects.find(p => p.slug === slug) || mockProjects[0];
-  if (project.value) {
-    useSeo({
-      title: project.value.title,
-      description: project.value.summary,
-      image: project.value.coverImage,
-    });
+onMounted(async () => {
+  try {
+    const data = await getBySlug(slug) as any;
+    project.value = {
+      id: data.id,
+      title: data.title,
+      slug: data.slug,
+      coverImage: data.coverImageUrl,
+      summary: data.summary,
+      content: data.content,
+      techStack: data.techStack,
+      repoUrl: data.repoUrl,
+      liveUrl: data.liveUrl,
+    };
+    if (project.value) {
+      useSeo({
+        title: project.value.title,
+        description: project.value.summary,
+        image: project.value.coverImage,
+      });
+    }
+  } catch {
+    router.replace({ name: "projects", params: { locale: route.params.locale || "tr" } });
+  } finally {
+    loading.value = false;
   }
-  loading.value = false;
 });
 
 const coverSrc = computed(
